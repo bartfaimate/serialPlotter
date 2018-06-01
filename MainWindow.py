@@ -9,6 +9,9 @@ from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 import sys
 import random
+import sys
+
+
 
 import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout
@@ -75,9 +78,10 @@ class Window(QtWidgets.QMainWindow):
         newAct.setToolTip("Create new Window")
         newAct.triggered.connect(self.newWindow)
 
-        openAct = QtWidgets.QAction("&Open", self)
+        openAct = QtWidgets.QAction("&Load", self)
         openAct.setShortcut("Ctrl+O")
-        openAct.setToolTip("Open saved data")
+        openAct.setToolTip("Load saved data")
+        openAct.triggered.connect(self.loadData)
 
         saveAct = QtWidgets.QAction("&Save", self)
         saveAct.setShortcut("Ctrl+S")
@@ -109,17 +113,24 @@ class Window(QtWidgets.QMainWindow):
             emptymsg = QtWidgets.QAction("No devices founded",self)
             deviceMenu.addAction(emptymsg)
         else:
-            signalMapper = QtCore.QSignalMapper(self) #create signalmapper to find out wich button is presed
+            self.signalMapper = QtCore.QSignalMapper(self) #create signalmapper to find out wich button is presed
 
             actionGroup = QtWidgets.QActionGroup(self, exclusive=True)
+            i = 0
+            self.deviceMap = {}
             for port in availablePorts:
                 action = actionGroup.addAction(QtWidgets.QAction(port.portName(), self,  checkable=True)) #make checkable the ports
                 deviceMenu.addAction(action)
-                s = port.portName()
-                signalMapper.setMapping(action, port.portName())
-                action.triggered.connect(signalMapper.map)
-
-            signalMapper.mapped.connect(self.setDevice)
+                action.triggered.connect(self.signalMapper.map) # connect signal
+                portname = port.portName()
+                self.signalMapper.setMapping(action, i)
+                self.deviceMap.__setitem__(i, portname) # add portname and idnex to a map
+                i = i + 1
+        
+            self.signalMapper.mapped.connect(self.setDevice)
+            print(str(self.deviceMap))
+            sys.stdout.flush()
+           
 
         ''' actionGroup = QtWidgets.QActionGroup(self, exclusive=True)
         for i in range(3):
@@ -134,7 +145,8 @@ class Window(QtWidgets.QMainWindow):
         
     # TODO: csatlakozzon az eszközhöz
     def connectToDevice(self):
-        self.device = QtSerialPort.QSerialPortInfo.availablePorts
+        #self.device = QtSerialPort.QSerialPortInfo.availablePorts()
+        pass
 
 
     def createAboutMenu(self, mainMenu):
@@ -164,7 +176,9 @@ class Window(QtWidgets.QMainWindow):
 
     def exitApp(self):
         # FIXME: close nem mukodik
+        print("Closing...",end="")
         self.close()
+        print("OK")
         #sys.exit()
 
     def saveData(self, fileName, datas):
@@ -177,6 +191,28 @@ class Window(QtWidgets.QMainWindow):
         for data in datas:
             file.write(data)
         file.close()
+
+    def loadData(self):
+        
+        fileChooser = QtWidgets.QFileDialog()
+        fileChooser.setViewMode(QtWidgets.QFileDialog.Detail)
+        fileChooser.setFileMode(QtWidgets.QFileDialog.ExistingFile)
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Saved Data", "/home/mate", "Image Files (*.data *.dat *.txt)")
+        print(fileName[0])
+        sys.stdout.flush()
+
+        try:
+            self.dataFile = open(fileName[0], "r")
+            lines = self.dataFile.read()
+            for line in lines:
+                print(line)
+                sys.stdout.flush()
+            
+            self.dataFile.close()
+        except:
+            pass
+       
+
 
     def plot(self):
         ''' plot some random stuff '''
