@@ -12,7 +12,6 @@ import random
 import sys
 
 
-
 import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout
 
@@ -22,14 +21,20 @@ import matplotlib.pyplot as plt
 
 import random
 
+
 class Window(QtWidgets.QMainWindow):
 
     def __init__(self):
-        super(Window,self).__init__()
-        self.setGeometry(100,100,800,600)
+        super(Window, self).__init__()
+        self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle("SerialPlotter")
 
-        #create figure for plot
+        # create variables
+        self.x = []
+        self.y = []
+        self.z = []
+
+        # create figure for plot
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
         self.toolBar = NavigationToolbar(self.canvas, self)
@@ -40,6 +45,7 @@ class Window(QtWidgets.QMainWindow):
         self.createFileMenu(self.mainMenu)
         self.createEditMenu(self.mainMenu)
         self.createDeviceMenu(self.mainMenu)
+        self.createFiltersMenu(self.mainMenu)
         self.createAboutMenu(self.mainMenu)
 
         self.button = QPushButton('Plot')
@@ -64,9 +70,8 @@ class Window(QtWidgets.QMainWindow):
         self.show()
 
     def createButton(self):
-        button = QtWidgets.QPushButton('Quit',self)
+        button = QtWidgets.QPushButton('Quit', self)
         button.clicked.connect(QtCore.QCoreApplication.instance().quit)
-
 
     def createFileMenu(self, mainMenu):
         """
@@ -102,7 +107,6 @@ class Window(QtWidgets.QMainWindow):
         """
         editMenu = mainMenu.addMenu('&Edit')
 
-
     def createDeviceMenu(self, mainMenu):
         """
         Create device menu, list all avaliable devices
@@ -110,44 +114,49 @@ class Window(QtWidgets.QMainWindow):
         deviceMenu = mainMenu.addMenu('&Device')
         availablePorts = QtSerialPort.QSerialPortInfo.availablePorts()
         if len(availablePorts) is 0:
-            emptymsg = QtWidgets.QAction("No devices founded",self)
+            emptymsg = QtWidgets.QAction("No device found", self)
             deviceMenu.addAction(emptymsg)
         else:
-            self.signalMapper = QtCore.QSignalMapper(self) #create signalmapper to find out wich button is presed
+            # create signalmapper to find out wich button is presed
+            self.signalMapper = QtCore.QSignalMapper(self)
 
             actionGroup = QtWidgets.QActionGroup(self, exclusive=True)
             i = 0
             self.deviceMap = {}
             for port in availablePorts:
-                action = actionGroup.addAction(QtWidgets.QAction(port.portName(), self,  checkable=True)) #make checkable the ports
+                action = actionGroup.addAction(QtWidgets.QAction(
+                    port.portName(), self,  checkable=True))  # make checkable the ports
                 deviceMenu.addAction(action)
-                action.triggered.connect(self.signalMapper.map) # connect signal
+                action.triggered.connect(
+                    self.signalMapper.map)  # connect signal
                 portname = port.portName()
                 self.signalMapper.setMapping(action, i)
-                self.deviceMap.__setitem__(i, portname) # add portname and idnex to a map
+                # add portname and idnex to a map
+                self.deviceMap.__setitem__(i, portname)
                 i = i + 1
-        
+
             self.signalMapper.mapped.connect(self.setDevice)
             print(str(self.deviceMap))
             sys.stdout.flush()
-           
 
         ''' actionGroup = QtWidgets.QActionGroup(self, exclusive=True)
         for i in range(3):
             action = actionGroup.addAction(QtWidgets.QAction(str(i),self,  checkable=True)) #make checkable the ports
             deviceMenu.addAction(action)
             action.triggered.connect(self.setDevice) '''
-    
+
     # TODO: megcsinálni hogy lehessen tudni melyik ezsköz van kiválasztva
     def setDevice(self, deviceName):
         print("buli van")
         print(deviceName)
-        
+
     # TODO: csatlakozzon az eszközhöz
     def connectToDevice(self):
         #self.device = QtSerialPort.QSerialPortInfo.availablePorts()
         pass
 
+    def createFiltersMenu(self, mainMenu):
+        filtersMenu = mainMenu.addMenu("Fi&lters")
 
     def createAboutMenu(self, mainMenu):
         """
@@ -158,12 +167,14 @@ class Window(QtWidgets.QMainWindow):
         """
         Creates Toolbar
         """
-        newAction = QtWidgets.QAction(QtGui.QIcon("./resources/new.png"), "New", self)
+        newAction = QtWidgets.QAction(
+            QtGui.QIcon("./resources/new.png"), "New", self)
         self.toolBar = self.addToolBar("MainToolBar")
         self.toolBar.addAction(newAction)
         newAction.triggered.connect(self.newWindow)
 
-        quitAction = QtWidgets.QAction(QtGui.QIcon("resources/quit.png"), "Quit",self)
+        quitAction = QtWidgets.QAction(
+            QtGui.QIcon("resources/quit.png"), "Quit", self)
         self.toolBar = self.addToolBar("MainToolBar")
         self.toolBar.addAction(quitAction)
         quitAction.triggered.connect(self.exitApp)
@@ -176,10 +187,10 @@ class Window(QtWidgets.QMainWindow):
 
     def exitApp(self):
         # FIXME: close nem mukodik
-        print("Closing...",end="")
+        print("Closing...", end="")
         self.close()
         print("OK")
-        #sys.exit()
+        # sys.exit()
 
     def saveData(self, fileName, datas):
         """
@@ -193,49 +204,87 @@ class Window(QtWidgets.QMainWindow):
         file.close()
 
     def loadData(self):
-        
+
         fileChooser = QtWidgets.QFileDialog()
         fileChooser.setViewMode(QtWidgets.QFileDialog.Detail)
         fileChooser.setFileMode(QtWidgets.QFileDialog.ExistingFile)
-        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Saved Data", "/home/mate", "Image Files (*.data *.dat *.txt)")
+        fileName = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open Saved Data", "/home/mate", "Image Files (*.data *.dat *.txt)")
         print(fileName[0])
         sys.stdout.flush()
 
+
         try:
             self.dataFile = open(fileName[0], "r")
-            lines = self.dataFile.read()
-            for line in lines:
-                print(line)
-                sys.stdout.flush()
-            
+
+            for line in self.dataFile:
+             #   print(line, end="")
+             #   sys.stdout.flush()
+
+                data = line.split(",")
+                self.x.append(data[0])
+                self.y.append(data[1])
+                self.z.append(data[2])
+
             self.dataFile.close()
         except:
-            pass
-       
-
+            print("Something went wrong by file opening")
+            sys.stdout.flush()
 
     def plot(self):
         ''' plot some random stuff '''
         # random data
-        data = [random.random() for i in range(10)]
+       # data = [random.random() for i in range(10)]
+        if len(self.z) is 0:
+            print("No file loaded")
+            sys.stdout.flush()
 
-        # create an axis
-        ax = self.figure.add_subplot(111)
+        else:
+            dataz = self.z
+            datax = self.x
+            datay = self.y
+            data = []
+            # TODO : ezt befejezni
+            for i in range(len(dataz)-5):
+                tmp = ( float(dataz[i]) + float(dataz[i+1]) + float(dataz[i+2]) + float(dataz[i+3]) ) / 4
+                data.append(tmp)
 
-        # discards the old graph
-        ax.clear()
+            # create an axis
+            fig = self.figure.add_subplot(111)
+            #fig = self.figure
+            # discards the old graph
+            fig.clear()
 
-        # plot data
-        ax.plot(data, '*-')
+            # plot data
+            #fig.plot(datax, "r", label="X")
+            #fig.plot(datay, "g", label="Y")
+            fig.plot(data, "b", label="Z")
+            fig.legend()
+            # grid on
+            fig.grid()
+            fig.set_ylim((9, 11))
+            fig.set_xlabel("time[s]")
+            fig.set_ylabel("velocity[m/s^2]")
+           
+            
 
-        # refresh canvas
-        self.canvas.draw()
+            # debug
+            # file = open("/home/mate/random.data", "w+")
+            # i = 0
+            # for d in data:
+            #     file.write(str(i) + " "+str(d)+"\n")
+            #     i = i + 1
+            # file.close()
 
+            # refresh canvas
+            self.canvas.draw()
 
 
 """
 
 """
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     window = Window()
@@ -244,4 +293,4 @@ def main():
 
 if __name__ == '__main__':
    # window()
-  main()
+    main()
