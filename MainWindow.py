@@ -10,6 +10,9 @@ from matplotlib import pyplot as plt
 import sys
 import random
 import sys
+import numpy as np
+import cv2
+
 
 
 import sys
@@ -38,6 +41,10 @@ class Window(QtWidgets.QMainWindow):
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
         self.toolBar = NavigationToolbar(self.canvas, self)
+        self.toolBar.setFixedHeight(40)
+        self.canvas.setMinimumHeight(200)
+        
+        
 
         # create menus
         self.mainMenu = self.menuBar()
@@ -51,6 +58,11 @@ class Window(QtWidgets.QMainWindow):
         self.button = QPushButton('Plot')
         self.button.clicked.connect(self.plot)
 
+        # create statusbar for messages
+        self.statusBar = QtWidgets.QStatusBar()
+        
+        
+
         wid = QtWidgets.QWidget(self)
         self.setCentralWidget(wid)
         verticalLayout = QVBoxLayout(self)
@@ -61,10 +73,19 @@ class Window(QtWidgets.QMainWindow):
         verticalLayout.addWidget(self.toolBar)
         verticalLayout.addWidget(self.canvas)
         verticalLayout.addWidget(self.button)
+        verticalLayout.addWidget(self.statusBar)
+       
+        # set canvas expanding
+        self.canvas.setSizePolicy( QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.canvas.updateGeometry()
 
-        self.setLayout(verticalLayout)
-
+        wid.setLayout(verticalLayout)
+        self.statusBar.setFixedHeight(20)
         self.devicePort = None
+        self.connected = False 
+
+        self.statusBar.showMessage("Started app...", 2000)
+
 
         # self.createButton()
         self.show()
@@ -145,19 +166,36 @@ class Window(QtWidgets.QMainWindow):
             deviceMenu.addAction(action)
             action.triggered.connect(self.setDevice) '''
 
-    # TODO: megcsinálni hogy lehessen tudni melyik ezsköz van kiválasztva
+    # TODO: megcsinalni hogy lehessen tudni melyik ezskoz van kivalasztva
     def setDevice(self, deviceName):
         print("buli van")
         print(deviceName)
 
-    # TODO: csatlakozzon az eszközhöz
+    # TODO: csatlakozzon az eszkozhoz
     def connectToDevice(self):
         #self.device = QtSerialPort.QSerialPortInfo.availablePorts()
         pass
 
     def createFiltersMenu(self, mainMenu):
-        filtersMenu = mainMenu.addMenu("Fi&lters")
+        self.filtersMenu = mainMenu.addMenu("Fi&lters")
+    
+        actionGroup = QtWidgets.QActionGroup(self, exclusive=True)
+       
+        action4 = actionGroup.addAction(QtWidgets.QAction("Average 4", self,  checkable=True))  # make checkable the options
+        action8 = actionGroup.addAction(QtWidgets.QAction("Average 8", self,  checkable=True))  
+        action12 = actionGroup.addAction(QtWidgets.QAction("Average 12", self,  checkable=True))  
 
+        action_spline = QtWidgets.QAction("Spline", self, checkable=True)
+
+        self.filtersMenu.addAction(action4)
+        self.filtersMenu.addAction(action8)
+        self.filtersMenu.addAction(action12)
+        self.filtersMenu.addSeparator()
+        self.filtersMenu.addAction(action_spline)
+
+            
+            
+            
     def createAboutMenu(self, mainMenu):
         """
         """
@@ -187,7 +225,7 @@ class Window(QtWidgets.QMainWindow):
 
     def exitApp(self):
         # FIXME: close nem mukodik
-        print("Closing...", end="")
+        print("Closing...")
         self.close()
         print("OK")
         # sys.exit()
@@ -212,6 +250,7 @@ class Window(QtWidgets.QMainWindow):
             self, "Open Saved Data", "/home/mate", "Image Files (*.data *.dat *.txt)")
         print(fileName[0])
         sys.stdout.flush()
+        self.statusBar.showMessage(fileName[0] + " loaded", 2000)
 
 
         try:
@@ -230,6 +269,7 @@ class Window(QtWidgets.QMainWindow):
         except:
             print("Something went wrong by file opening")
             sys.stdout.flush()
+            self.statusBar.showMessage("Something went wrong by file opening", 2000)
 
     def plot(self):
         ''' plot some random stuff '''
@@ -238,16 +278,35 @@ class Window(QtWidgets.QMainWindow):
         if len(self.z) is 0:
             print("No file loaded")
             sys.stdout.flush()
+            self.statusBar.showMessage("No file loaded", 2000)
+
+        elif self.connected is True:
+            # TODO: ide kell a serialread
+            pass
 
         else:
+
             dataz = self.z
             datax = self.x
             datay = self.y
-            data = []
-            # TODO : ezt befejezni
+            plotx = []
+            ploty = []
+            plotz = []
+            # convert to numpy array
+            dataz = np.asarray(self.z, dtype=float, order=None)
+            datax = np.asarray(self.x, dtype=float, order=None)
+            datay = np.asarray(self.y, dtype=float, order=None)
+
+            # correction of the z axis
+            dataz[0:len(dataz)] = dataz[0:len(dataz)] -10
+            # filter for the measured datas
             for i in range(len(dataz)-5):
-                tmp = ( float(dataz[i]) + float(dataz[i+1]) + float(dataz[i+2]) + float(dataz[i+3]) ) / 4
-                data.append(tmp)
+                tmpx = np.sum(datax[i:i+3])/4
+                tmpy = np.sum(datay[i:i+3])/4
+                tmpz = np.sum(dataz[i:i+3])/4
+                plotx.append(tmpx)
+                ploty.append(tmpy)
+                plotz.append(tmpz)
 
             # create an axis
             fig = self.figure.add_subplot(111)
@@ -256,13 +315,13 @@ class Window(QtWidgets.QMainWindow):
             fig.clear()
 
             # plot data
-            #fig.plot(datax, "r", label="X")
-            #fig.plot(datay, "g", label="Y")
-            fig.plot(data, "b", label="Z")
+            fig.plot(plotx, "r", label="X")
+            fig.plot(ploty, "g", label="Y")
+            fig.plot(plotz, "b", label="Z")
             fig.legend()
             # grid on
             fig.grid()
-            fig.set_ylim((9, 11))
+            fig.set_ylim((-2, 2))
             fig.set_xlabel("time[s]")
             fig.set_ylabel("velocity[m/s^2]")
            

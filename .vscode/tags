@@ -1,0 +1,55 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+MainWindow.py	../MainWindow.py	1;"	kind:file	line:1
+PlotData	../tools.py	/^class PlotData(multiprocessing.Process):$/;"	kind:class	line:53
+Window	../MainWindow.py	/^class Window(QtWidgets.QMainWindow):$/;"	kind:class	line:28
+Window	../examplepyplot.py	/^class Window(QDialog):$/;"	kind:class	line:11
+WriteData	../tools.py	/^class WriteData(multiprocessing.Process):$/;"	kind:class	line:9
+__init__	../MainWindow.py	/^    def __init__(self):$/;"	kind:member	line:30
+__init__	../examplepyplot.py	/^    def __init__(self, parent=None):$/;"	kind:member	line:12
+__init__	../tools.py	/^    def __init__(self):$/;"	kind:member	line:54
+__init__	../tools.py	/^    def __init__(self, uartdevice, file):$/;"	kind:member	line:10
+animate	../serialPlotter.py	/^def animate( i):$/;"	kind:function	line:50
+app	../examplepyplot.py	/^    app = QApplication(sys.argv)$/;"	kind:variable	line:93
+ax1	../serialPlotter.py	/^ax1 = fig.add_subplot(1,1,1)$/;"	kind:variable	line:48
+collectData	../serialPlotter.py	/^def collectData(fileName, datas):$/;"	kind:function	line:20
+connectToDevice	../MainWindow.py	/^    def connectToDevice(self):$/;"	kind:member	line:167
+continuosplot.py	../continuosplot.py	1;"	kind:file	line:1
+createAboutMenu	../MainWindow.py	/^    def createAboutMenu(self, mainMenu):$/;"	kind:member	line:191
+createButton	../MainWindow.py	/^    def createButton(self):$/;"	kind:member	line:85
+createDeviceMenu	../MainWindow.py	/^    def createDeviceMenu(self, mainMenu):$/;"	kind:member	line:123
+createEditMenu	../MainWindow.py	/^    def createEditMenu(self, mainMenu):$/;"	kind:member	line:118
+createFileMenu	../MainWindow.py	/^    def createFileMenu(self, mainMenu):$/;"	kind:member	line:89
+createFileMenu	../examplepyplot.py	/^    def createFileMenu(self, mainMenu):$/;"	kind:member	line:62
+createFiltersMenu	../MainWindow.py	/^    def createFiltersMenu(self, mainMenu):$/;"	kind:member	line:171
+createToolBar	../MainWindow.py	/^    def createToolBar(self):$/;"	kind:member	line:196
+examplepyplot.py	../examplepyplot.py	1;"	kind:file	line:1
+exitApp	../MainWindow.py	/^    def exitApp(self):$/;"	kind:member	line:218
+exitApp	../examplepyplot.py	/^    def exitApp(self):$/;"	kind:member	line:88
+fig	../continuosplot.py	/^fig=plt.figure()$/;"	kind:variable	line:4
+fig	../serialPlotter.py	/^fig = plt.figure()$/;"	kind:variable	line:47
+i	../continuosplot.py	/^i=0$/;"	kind:variable	line:7
+include	../serialPlotter.py	/^def include():$/;"	kind:function	line:1
+init	../serialPlotter.py	/^def init():$/;"	kind:function	line:12
+loadData	../MainWindow.py	/^    def loadData(self):$/;"	kind:member	line:236
+main	../MainWindow.py	/^def main():$/;"	kind:function	line:339
+main	../examplepyplot.py	/^    main = Window()$/;"	kind:variable	line:95
+main	../serialPlotter.py	/^def main():$/;"	kind:function	line:62
+newWindow	../MainWindow.py	/^    def newWindow(self):$/;"	kind:member	line:212
+newWindow	../examplepyplot.py	/^    def newWindow(self):$/;"	kind:member	line:85
+plot	../MainWindow.py	/^    def plot(self):$/;"	kind:member	line:266
+plot	../examplepyplot.py	/^    def plot(self):$/;"	kind:member	line:42
+plotData	../serialPlotter.py	/^def plotData(data):$/;"	kind:function	line:27
+run	../tools.py	/^    def run(self):$/;"	kind:member	line:15
+run	../tools.py	/^    def run(self):$/;"	kind:member	line:59
+saveData	../MainWindow.py	/^    def saveData(self, fileName, datas):$/;"	kind:member	line:225
+serialPlotter.py	../serialPlotter.py	1;"	kind:file	line:1
+setDevice	../MainWindow.py	/^    def setDevice(self, deviceName):$/;"	kind:member	line:162
+temp_y	../continuosplot.py	/^    temp_y=np.random.random();$/;"	kind:variable	line:12
+tools.py	../tools.py	1;"	kind:file	line:1
+x	../continuosplot.py	/^x=list()$/;"	kind:variable	line:8
+y	../continuosplot.py	/^y=list()$/;"	kind:variable	line:9
