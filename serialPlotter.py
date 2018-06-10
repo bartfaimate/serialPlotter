@@ -1,13 +1,15 @@
-def include():
-    import serial
-    from matplotlib import pyplot as plt
-    from matplotlib import animation as animation
-    from matplotlib import style
-    import io
-    import argparse
-    import numpy as np
-    import PyQt5
-    from tools import WriteData, PlotData
+
+import serial
+from matplotlib import pyplot as plt
+from matplotlib import animation as animation
+from matplotlib import style
+import io
+import argparse
+import numpy as np
+import PyQt5
+from tools import WriteData, PlotData
+from tools import WriteData
+
 
 def init():
     device = serial.Serial()
@@ -43,7 +45,7 @@ def plotData(data):
   #          ys.append(z)
   #      ax1.clear()
   #      ax1.plot()
-include()
+
 fig = plt.figure()
 ax1 = fig.add_subplot(1,1,1)
 
@@ -59,6 +61,7 @@ def animate( i):
                 ys.append(z)
             ax1.clear()
             ax1.plot()
+
 def main():
     style.use("fivethirtyeight")
 
@@ -79,24 +82,6 @@ def main():
     device.close()    
     
     
-        
-        
-     
-       # collectData("data/data1.dat", datas)
-       # dataz = np.array(dataz)     # convert array to numpy array
-       # dataz = dataz * G          # calculate acceleration
-       # dataz = dataz - 0.06 
-       # avgz = np.sum(dataz)/len(dataz)
-        #for z in dataz:
-        #    print(z)
-
-       # print("average is: " + str(avgz))               # calculate average gravity
-       # plt.plot(np.linspace(0, len(dataz), len(dataz)), dataz )
-       # plt.axhline(y=-9.81, color='r', linestyle='-')  # plot constant line
-       # plt.grid( linestyle='-', linewidth=1)           # plot grids 
-       # plt.show()                                      # show the plot
-
-      #  input("Press Enter to continue...")
 if __name__ == '__main__':
     main()
 
