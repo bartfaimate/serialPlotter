@@ -92,14 +92,33 @@ class Window(QtWidgets.QMainWindow):
         wid = QtWidgets.QWidget(self)
         self.setCentralWidget(wid)
         verticalLayout = QVBoxLayout(self)
+        
+        buttonLayout = QtWidgets.QHBoxLayout(self)
+        buttonLayout.addWidget(self.buttonConnect)
+        buttonLayout.addWidget(self.buttonPlot)
+
+        labelLayout = QtWidgets.QHBoxLayout(self)
+        
+
+        # add labels to show average acceleration
+        self.avgXLabel = QtWidgets.QLabel(self)
+        self.avgYLabel = QtWidgets.QLabel(self)
+        self.avgZLabel = QtWidgets.QLabel(self)
+        
+        labelLayout.addWidget(QtWidgets.QLabel("X:",self))
+        labelLayout.addWidget(self.avgXLabel)
+        labelLayout.addWidget(QtWidgets.QLabel("Y:",self))
+        labelLayout.addWidget(self.avgYLabel)
+        labelLayout.addWidget(QtWidgets.QLabel("Z:",self))
+        labelLayout.addWidget(self.avgZLabel)
 
         # setup the layout for the window
         wid.setLayout(verticalLayout)
         verticalLayout.addWidget(self.mainMenu)
         verticalLayout.addWidget(self.toolBar)
         verticalLayout.addWidget(self.canvas)
-        verticalLayout.addWidget(self.buttonPlot)
-        verticalLayout.addWidget(self.buttonConnect)
+        verticalLayout.addLayout(labelLayout)
+        verticalLayout.addLayout(buttonLayout)
         verticalLayout.addWidget(self.statusBar)
        
         # set canvas expanding
@@ -244,6 +263,7 @@ class Window(QtWidgets.QMainWindow):
                 self._isconnected = False
                # self.data = self.readProcess.getData().get()
                 self.readProcess.setShouldRun(False)
+                self.readProcess.device.write("d".encode("ascii")) # stop sending
                 #self.readProcess.join()
                 if self.serialPort.is_open is True:
                     self.serialPort.close()
@@ -314,6 +334,13 @@ class Window(QtWidgets.QMainWindow):
     def exitApp(self):
         # FIXME: close nem mukodik
         print("Closing...")
+        if self.readProcess is not None :
+            self.readProcess.setShouldRun(False)
+            self.device.write("d".encode("ascii")) # disconnect
+
+            #self.readProcess.join()
+            self.readProcess.exit()
+
         if self.serialPort is not None:
             try:
                 self.serialPort.close()
@@ -321,13 +348,9 @@ class Window(QtWidgets.QMainWindow):
             except IOError:
                 print("not opened")
         
-        if self.readProcess is not None :
-            self.readProcess.setShouldRun(False)
-            self.readProcess.join()
+        
         self.close()
         print("OK")
-        #self.__del__()
-        # sys.exit()
 
 
     def saveData(self):
@@ -398,6 +421,8 @@ class Window(QtWidgets.QMainWindow):
                 self.z.append(data[2])
 
             self.dataFile.close()
+
+            self.plot()
         except:
             print("Something went wrong by file opening")
             sys.stdout.flush()
@@ -412,9 +437,7 @@ class Window(QtWidgets.QMainWindow):
             sys.stdout.flush()
             self.statusBar.showMessage("No file loaded", 2000)
 
-
         else:
-
             dataz = self.z
             datax = self.x
             datay = self.y
@@ -427,14 +450,20 @@ class Window(QtWidgets.QMainWindow):
             datay = np.asarray(self.y, dtype=float, order=None)
 
             # correction of the x z y axises
-            datax[0:len(datax)] = datax[0:len(datax)] + 0.435
-            datay[0:len(datay)] = datay[0:len(datay)] + 0.819
-            dataz[0:len(dataz)] = dataz[0:len(dataz)] - 10.027
+            datax[0:len(datax)] = datax[0:len(datax)] + 0.0
+            datay[0:len(datay)] = datay[0:len(datay)] + 0.0
+            dataz[0:len(dataz)] = dataz[0:len(dataz)] - 0.0
 
+            velocity = self.calculateVelocity(dataz)
             # calculate the average
             avgx = np.sum(datax) / len(datax)
             avgy = np.sum(datay) / len(datay)
             avgz = np.sum(dataz) / len(dataz)
+
+            self.avgXLabel.setText(str(avgx))
+            self.avgYLabel.setText(str(avgy))
+            self.avgZLabel.setText(str(avgz))
+
             print("avg x  y z " + str(avgx) + " " + str(avgy) + " " + str(avgz))
             sys.stdout.flush() 
 
@@ -457,6 +486,7 @@ class Window(QtWidgets.QMainWindow):
             fig.plot(plotx, "r", label="X")
             fig.plot(ploty, "g", label="Y")
             fig.plot(plotz, "b", label="Z")
+            fig.plot(velocity, "y", label="V")
             fig.legend()
             # grid on
             fig.grid()
@@ -465,6 +495,20 @@ class Window(QtWidgets.QMainWindow):
             fig.set_ylabel("velocity[m/s^2]")
            
             self.canvas.draw()
+
+    def calculateVelocity(self, accelData):
+        if accelData is None:
+            print("No data for velocity")
+            sys.stdout.flush()
+            velocity = None
+        else:
+            velocity = []
+            for i in range(len(accelData) - 1 ):
+                data = (accelData[i] + accelData[i+1]) * 0.01
+                velocity.append(data)
+
+        return velocity
+            
 
 MAXREADLINES = 500
 
@@ -490,9 +534,10 @@ class ReaderThread (QtCore.QThread):
             linecntr = 0
             sio = io.TextIOWrapper(io.BufferedRWPair(self.device,self.device)) 
             
-            self.device.read(30)
+            # send connect character to the device
+            self.device.write("c".encode("ascii"))
             #line = sio.readline()
-            while self.shouldRun and linecntr < 45000:
+            while self.shouldRun and linecntr < 4500:
                 line = sio.readline()
                 line.encode('utf-8').strip()
                 if len(line) < 2:
@@ -510,6 +555,7 @@ class ReaderThread (QtCore.QThread):
 
     def setShouldRun(self, shouldRun):
         self.shouldRun = shouldRun
+        self.device.write("d".encode("ascii")) # disconnect
 
 """
 
